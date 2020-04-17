@@ -191,9 +191,17 @@ export class QueryEditor extends PureComponent<Props, State> {
           </div>
           <div className="gf-form-inline">
             <FormLabel>Format</FormLabel>
-            <Select isSearchable={false} options={FORMAT_OPTIONS} onChange={this.onFormatChange} value={this.getFormatOption()} />
+            <Select
+              isSearchable={false}
+              options={FORMAT_OPTIONS}
+              onChange={this.onFormatChange} value={this.getFormatOption()}
+            />
             <FormLabel>Resolution</FormLabel>
-            <Select isSearchable={false} options={RESOLUTION_OPTIONS} onChange={this.onResolutionChange} value={this.getResolutionOption()} />
+            <Select
+              isSearchable={false}
+              options={RESOLUTION_OPTIONS}
+              onChange={this.onResolutionChange} value={this.getResolutionOption()}
+            />
           </div>
         </>
     );
