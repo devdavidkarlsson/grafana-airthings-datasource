@@ -8,9 +8,9 @@ Features:
 
 - Query Airthings sensor data and present as a time series data.
 
-### Configuration
+### Installation
 
-See [configuration](https://github.com/devdavidkarlsson/grafana-airthings-datasource/blob/master/docs/configuration.md) docs.
+See [installation](https://github.com/devdavidkarlsson/grafana-airthings-datasource/blob/master/docs/installation.md) docs.
 
 ### Quick start
 
@@ -22,6 +22,11 @@ export GF_AIRTHINGS_DS_DATA_PATH=/var/lib/grafana/airthings
 ```
 
 Note: Airthings API is currently only available for use with Airthings for Business API-clients and devices.
+
+### Configuration
+
+See [configuration](https://github.com/devdavidkarlsson/grafana-airthings-datasource/blob/master/docs/configuration.md) docs.
+
 
 #### Original source code
 This plugin is based on the code in the [strava-datasource](https://github.com/grafana/strava-datasource).
