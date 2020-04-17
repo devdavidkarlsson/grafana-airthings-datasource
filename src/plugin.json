@@ -35,21 +35,6 @@
   },
 
   "includes": [
-    {
-      "type": "dashboard",
-      "name": "Strava Athlete Dashboad Modern",
-      "path": "dashboards/strava_athlete_dashboad_modern.json"
-    },
-    {
-      "type": "dashboard",
-      "name": "Strava Athlete Dashboad",
-      "path": "dashboards/strava_athlete_dashboad.json"
-    },
-    {
-      "type": "dashboard",
-      "name": "Strava Datasource",
-      "path": "dashboards/strava_datasource.json"
-    }
   ],
 
   "dependencies": {

@@ -1,6 +1,6 @@
 # Change Log
 
-## [1.1.2 - Airthings] - 2020-04-15
+## [1.1.1 - Airthings] - 2020-04-15
 
 - Forked from strava-datasource ( <3 ) to make Airthings data source.
 
