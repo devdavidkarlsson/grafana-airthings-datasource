@@ -1,0 +1,44 @@
+{
+  "name": "Airthings",
+  "id": "grafana-airthings-datasource",
+  "type": "datasource",
+
+  "metrics": true,
+  "annotations": false,
+
+  "backend": true,
+  "alerting": false,
+  "executable": "./airthings-plugin",
+
+  "info": {
+    "description": "Airthings datasource",
+    "author": {
+      "name": "Airthings Labs",
+      "url": "https://developer.airthings.com"
+    },
+    "logos": {
+      "small": "img/airthings-logo.svg",
+      "large": "img/airthings-logo.svg"
+    },
+    "links": [
+      {
+        "name": "Website",
+        "url": "https://grafana.com/plugins/grafana-airthings-datasource"
+      },
+      {
+        "name": "License",
+        "url": "https://grafana.com/plugins/grafana-airthings-datasource/license"
+      }
+    ],
+    "version": "1.1.1",
+    "updated": "2020-03-05"
+  },
+
+  "includes": [
+  ],
+
+  "dependencies": {
+    "grafanaVersion": "6.5",
+    "plugins": []
+  }
+}
