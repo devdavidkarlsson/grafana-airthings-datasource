@@ -1,17 +1,16 @@
 # Plugin Installation
 
 #### OSX:
-
+
 Install through your terminal by:
 ```
-
-## Setup prerequisites if you dont have them: ##
+## Setup prerequisites if you don't have them: ##
 
 brew update
-brew install grafana    # if you dont have it.
-brew install go         # if you dont have it.
+brew install grafana    # if you don't have it.
+brew install go         # if you don't have it.
 
-## Build the plugin ##
+## Build the plugin: ##
 
 cd /usr/local/var/lib/grafana/plugins
 git clone git@github.com:devdavidkarlsson/grafana-airthings-datasource.git
@@ -19,7 +18,7 @@ cd grafana-airthings-datasource
 make install
 make dist
 
-## Start/restart Grafana
+## Start/restart Grafana: ##
 
 brew services restart grafana
 

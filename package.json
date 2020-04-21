@@ -1,13 +1,13 @@
 {
   "name": "grafana-airthings-datasource",
   "description": "Airthings Datasource for Grafana",
-  "version": "1.3.1",
+  "version": "1.1.1-Airthings",
   "homepage": "https://github.com/devdavidkarlsson/grafana-airthings-datasource",
-  "author": "Original Author: Grafana Labs <team@grafana.com> (Modified by David Karlsson for the Airthings API)",
+  "author": "Modified by David Karlsson for the Airthings API, Original Source by: Grafana Labs",
   "license": "SEE LICENSE IN LICENSE",
   "private": true,
   "scripts": {
-    "build": "webpack --config webpack/webpack.dev.conf.js",
+    "build": "webpack --config webpack/webpack.prod.conf.js",
     "dev": "webpack --config webpack/webpack.dev.conf.js",
     "start": "webpack --config webpack/webpack.dev.conf.js --watch",
     "test": "jest --config jest.config.js --passWithNoTests",

@@ -4,7 +4,7 @@ Since Grafana provides nice visualising and comparing capabilities of time serie
 We decided to make a Grafana datasource for our API.
 
 
-# Grafana plugin archictecture
+# Grafana plugin architecture
 
 	 +------------------+-------------------------+
 	|                   | AIRTHINGS  |  AIRTHINGS  |
@@ -167,8 +167,8 @@ func (p *AirthingsPlugin) Query(ctx context.Context, tsdbReq *datasource.Datasou
 ## Setup (OSX)
   
     brew update  
-    brew install grafana    # if you dont have it.  
-    brew install go         # if you dont have it.  
+    brew install grafana    # if you don't have it.  
+    brew install go         # if you don't have it.  
       
     ## Build the plugin ##  
       

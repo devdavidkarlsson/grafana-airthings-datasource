@@ -135,11 +135,11 @@ jobs:
     <<: *defaults
     environment:
       CI_GIT_USER: CircleCI
-      CI_GIT_EMAIL: ci@grafana.com
+      CI_GIT_EMAIL: dev.david.karlsson@gmail.com
     steps:
       - add_ssh_keys:
           fingerprints:
-            - "58:4a:11:32:2d:98:26:f7:33:b5:4d:f0:6b:72:08:fc"
+            - "a3:4b:d0:4c:82:e7:97:8e:51:cf:b6:35:ee:db:47:19"
       - checkout
       - attach_workspace:
           at: .
