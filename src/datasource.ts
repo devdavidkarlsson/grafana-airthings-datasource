@@ -86,28 +86,6 @@ export default class AirthingsDatasource extends DataSourceApi<AirthingsQuery, A
           break;
       }
     }
-    /*const activities = await this.airthingsApi.getActivities({
-      before: options.range.to.unix(),
-      after: options.range.from.unix(),
-    });
-
-    for (const target of options.targets) {
-      const filteredActivities = this.filterActivities(activities, target.sensorType);
-      switch (target.format) {
-        case QueryFormat.Table:
-          const tableData = this.transformActivitiesToTable(filteredActivities, target);
-          data.push(tableData);
-          break;
-        case QueryFormat.WorldMap:
-          const wmData = this.transformActivitiesToWorldMap(filteredActivities, target);
-          data.push(wmData);
-          break;
-        default:
-          const tsData = this.transformActivitiesToTimeseries(filteredActivities, target, options.range);
-          data.push(tsData);
-          break;
-      }
-    }*/
 
     return { data };
   }

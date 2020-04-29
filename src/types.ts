@@ -10,6 +10,7 @@ export interface AirthingsSecureJsonData {
 }
 
 export interface AirthingsQuery extends DataQuery {
+  organizationId: AirthingsOrganizationId;
   queryType: AirthingsQueryType;
   resourceId: AirthingsResourceId;
   resourceName: string;
@@ -48,3 +49,4 @@ export enum AirthingsSensorType {
 }
 
 export type AirthingsResourceId = string | null;
+export type AirthingsOrganizationId = string | null;
