@@ -90,12 +90,13 @@ export class QueryEditor extends PureComponent<Props, State> {
         { value: organization.id, 'label': organization.name, 'description': organization.id }
     ));
     this.setState({ organizations });
-
-    const organizationId = organizations.find(v => v.value === this.props.query.organizationId).size > 0 ?
+    const organizationId = organizations.find(v => v.value === this.props.query.organizationId) ?
         this.props.query.organizationId
         : null;
 
     this.getResourcesForOrganization(organizationId);
+    this.onChange({ ...this.props.query, queryType: this.queryDefaults.queryType});
+
   }
 
   async getResourcesForOrganization(organizationId: AirthingsOrganizationId) {
