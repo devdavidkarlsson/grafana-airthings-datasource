@@ -2,10 +2,8 @@
   "name": "Airthings",
   "id": "grafana-airthings-datasource",
   "type": "datasource",
-
   "metrics": true,
   "annotations": false,
-
   "backend": true,
   "alerting": false,
   "executable": "./airthings-plugin",
