@@ -50,6 +50,7 @@ export const DefaultTarget: State = {
     queryType: AirthingsQueryType.Devices,
     sensorType: AirthingsSensorType.Temp,
     resourceId: null,
+    locationId: null,
     organizationId: null,
     resourceName: '',
     format: QueryFormat.TimeSeries,
@@ -73,6 +74,7 @@ export class QueryEditor extends PureComponent<Props, State> {
     format: QueryFormat.TimeSeries,
     queryType: AirthingsQueryType.Devices,
     resourceId: null,
+    locationId: null,
     organizationId: null,
     sensorType: AirthingsSensorType.Temp,
     resolution: AirthingsQueryResolution.Hour,
@@ -99,13 +101,19 @@ export class QueryEditor extends PureComponent<Props, State> {
   async getResourcesForOrganization(organizationId: AirthingsOrganizationId) {
     organizationId = organizationId || this.props.query.organizationId;
     const devicesResponse = await this.props.datasource.airthingsApi.getDevices({ organizationId });
-    const devices = devicesResponse.devices.map( device => (
-        { value: device.id, 'label': device.segment.name, 'description': device.id, 'sensors': device.sensors }
-    ));
+    const devices = devicesResponse.devices.map( device => ({
+          value: device.id,
+          'label': device.segment.name,
+          'description': device.id,
+          'sensors': device.sensors,
+          'locationId': device.location.id
+    }));
     const locationsResponse = await this.props.datasource.airthingsApi.getLocations({ organizationId });
-    const locations = locationsResponse.locations.map( location => (
-        { value: location.id, 'label': location.name, 'description': location.id }
-    ));
+    const locations = locationsResponse.locations.map( location => ({
+          value: location.id,
+          'label': location.name,
+          'description': location.id
+    }));
 
     this.setState({ devices, locations });
   }
@@ -122,6 +130,20 @@ export class QueryEditor extends PureComponent<Props, State> {
     if (resourceId === null) { return null; }
     const resourceSet = (this.props.query.queryType === AirthingsQueryType.Locations) ? this.state.locations : this.state.devices;
     return resourceSet ? resourceSet.find(v => v.value === resourceId) : null;
+  }
+
+  getLocationOption = () => {
+      return this.state.locations.find(v => v.value === this.props.query.locationId);
+  }
+
+  getAvaliableLocationOptions = () => {
+    return this.state.locations;
+  }
+
+  getAvaliableResourceOptions = () => {
+      return this.props.query.queryType === AirthingsQueryType.Locations ?
+          this.state.locations
+          : this.state.devices.filter(device => device.locationId === this.props.query.locationId);
   }
 
   getResourceOption = () => {
@@ -147,6 +169,11 @@ export class QueryEditor extends PureComponent<Props, State> {
     return RESOLUTION_OPTIONS.find(v => v.value === this.props.query.resolution);
   }
 
+  onLocationChanged = (option: SelectableValue<AirthingsResourceId>) => {
+    const { query } = this.props;
+    this.onChange({ ...query, locationId: option.value, resourceId: null });
+  }
+
   onQueryTypeChanged = (option: SelectableValue<AirthingsQueryType>) => {
     const { query } = this.props;
     this.onChange({ ...query, queryType: option.value, resourceId: null, sensorType: null });
@@ -168,7 +195,7 @@ export class QueryEditor extends PureComponent<Props, State> {
 
   onOrganizationChanged = (option: SelectableValue<AirthingsOrganizationId>) => {
     const { query } = this.props;
-    this.onChange({ ...query, organizationId: option.value });
+    this.onChange({ ...query, organizationId: option.value, locationId: null, resourceId: null});
     this.getResourcesForOrganization(option.value);
   }
 
@@ -189,7 +216,7 @@ export class QueryEditor extends PureComponent<Props, State> {
   }
 
   render() {
-    const { devices, locations, organizations } = this.state;
+    const {organizations } = this.state;
     return (
         <>
           <div className="gf-form-inline">
@@ -202,28 +229,43 @@ export class QueryEditor extends PureComponent<Props, State> {
                 onChange={this.onOrganizationChanged}
                 className="gf-form-select"
             />
-            <FormLabel width={10}>Type</FormLabel>
-            <Select
-                isSearchable={false}
-                width={10}
-                value={this.getQueryTypeOption()}
-                options={QUERYTYPE_OPTIONS}
-                onChange={this.onQueryTypeChanged}
-                className="gf-form-select"
-            />
+            { QUERYTYPE_OPTIONS.length > 1 &&
+                <span>
+                    <FormLabel width={10}>Type</FormLabel>
+                    <Select
+                        isSearchable={false}
+                        width={10}
+                        value={this.getQueryTypeOption()}
+                        options={QUERYTYPE_OPTIONS}
+                        onChange={this.onQueryTypeChanged}
+                        className="gf-form-select"
+                    />
+                </span>
+            }
+            <FormLabel width={10}>Location</FormLabel>
+              <Select
+                  isSearchable={false}
+                  width={10}
+                  value={this.getLocationOption()}
+                  options={this.getAvaliableLocationOptions()}
+                  onChange={this.onLocationChanged}
+                  className="gf-form-select"
+              />
+          </div>
+          <div className="gf-form-inline">
             <FormLabel width={10}>{this.props.query.queryType === AirthingsQueryType.Locations ? 'Location' : 'Device'}</FormLabel>
             <Select
                 isSearchable={false}
-                width={10}
+                width={15}
                 value={this.getResourceOption()}
-                options={this.props.query.queryType === AirthingsQueryType.Locations ? locations : devices}
+                options={this.getAvaliableResourceOptions()}
                 onChange={this.onResourceChanged}
                 className="gf-form-select"
             />
-            <FormLabel width={5}>Sensor</FormLabel>
+            <FormLabel width={10}>Sensor</FormLabel>
             <Select
                 isSearchable={false}
-                width={5}
+                width={10}
                 value={this.getSensorTypeOption()}
                 options={this.getSensorsOfSelectedResource()}
                 onChange={this.onSensorTypeChanged}
@@ -241,7 +283,7 @@ export class QueryEditor extends PureComponent<Props, State> {
             <FormLabel width={10}>Resolution</FormLabel>
             <Select
               isSearchable={false}
-              width={5}
+              width={10}
               options={RESOLUTION_OPTIONS}
               onChange={this.onResolutionChange} value={this.getResolutionOption()}
             />
