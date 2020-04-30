@@ -12,6 +12,7 @@ export interface AirthingsSecureJsonData {
 export interface AirthingsQuery extends DataQuery {
   organizationId: AirthingsOrganizationId;
   queryType: AirthingsQueryType;
+  locationId: AirthingsResourceId;
   resourceId: AirthingsResourceId;
   resourceName: string;
   sensorType: AirthingsSensorType;
