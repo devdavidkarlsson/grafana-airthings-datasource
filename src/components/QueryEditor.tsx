@@ -41,7 +41,6 @@ const RESOLUTION_OPTIONS: Array<SelectableValue<AirthingsQueryResolution>> = [
   { label: 'Week', value: AirthingsQueryResolution.Week },
 ];
 
-
 export const DefaultTarget: State = {
     refId: '',
     organizations: [],
