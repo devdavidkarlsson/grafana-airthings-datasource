@@ -1,8 +1,20 @@
 # Plugin Installation
 
 #### OSX:
+##### Install (pre-built release) through your terminal by:
+```
+brew update
+brew install grafana    # if you don't have it.
 
-Install through your terminal by:
+cd /usr/local/var/lib/grafana/plugins
+git clone --single-branch --branch release-1.1.1-airthings-1.0.0 https://github.com/Airthings/grafana-airthings-datasource.git
+brew services restart grafana
+
+# The plugin should be available in the datasource section of grafana. (if not, try building from source.)
+open http://localhost:3000/datasources/new
+```
+
+##### Building from source
 ```
 ## Setup prerequisites if you don't have them: ##
 
