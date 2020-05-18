@@ -93,7 +93,7 @@ export class QueryEditor extends PureComponent<Props, State> {
         this.props.query.organizationId
         : null;
 
-    this.getResourcesForOrganization(organizationId);
+    await this.getResourcesForOrganization(organizationId);
     this.onChange({ ...this.props.query, queryType: this.queryDefaults.queryType});
 
   }
@@ -150,15 +150,20 @@ export class QueryEditor extends PureComponent<Props, State> {
     return this.getResource(this.props.query.resourceId);
   }
 
-  getSensorsOfSelectedResource = () => {
+  getSensorsOfSelectedResource = (): Array<SelectableValue<AirthingsSensorType>> => {
     if (this.props.query.queryType === AirthingsQueryType.Locations) { return SENSORTYPE_OPTIONS; }
     const selectedResource = this.getResourceOption();
-    const availableSensors = selectedResource ? selectedResource.sensors + AirthingsSensorType.All : [];
-    return SENSORTYPE_OPTIONS.filter(v => availableSensors.includes(v.value));
+    const availableDeviceSensors = selectedResource ? selectedResource.sensors + AirthingsSensorType.All : [];
+    const nonListedSensors = selectedResource ? selectedResource
+        .sensors
+        .filter(sensor => SENSORTYPE_OPTIONS.map(listedSensor => listedSensor.value).indexOf(sensor) === -1) : [];
+    const listedSensors = SENSORTYPE_OPTIONS.filter(v => availableDeviceSensors.includes(v.value));
+    const selectableSensors = [ ...listedSensors, ...nonListedSensors.map(sensor => ({value: sensor, label: sensor})) ];
+    return selectableSensors ? selectableSensors : [];
   }
 
   getSensorTypeOption = () => {
-    return SENSORTYPE_OPTIONS.find(v => v.value === this.props.query.sensorType);
+    return this.getSensorsOfSelectedResource().find(v => v.value === this.props.query.sensorType);
   }
 
   getFormatOption = () => {
