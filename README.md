@@ -14,12 +14,8 @@ See [installation](https://github.com/devdavidkarlsson/grafana-airthings-datasou
 
 ### Quick start
 
-Before you start grafana server, configure plugin data directory with `GF_AIRTHINGS_DS_DATA_PATH` environment variable. This required for storing obtained refresh tokens and make it available after plugin restart. Default path is plugin directory, but it will be removed during plugin upgrade, so for persistent storage it's better to use grafana data directory. Example:
-
-```sh
-mkdir /var/lib/grafana/airthings
-export GF_AIRTHINGS_DS_DATA_PATH=/var/lib/grafana/airthings
-```
+Before you start grafana server, mount a persistent folder in /var/lib/grafana/airthings.
+This required for storing obtained refresh tokens, that are used to maintain access to the API when the access token expires.
 
 Note: Airthings API is currently only available for use with Airthings for Business API-clients and devices.
 
