@@ -160,6 +160,7 @@ func (ds *AirthingsApiDatasource) ExchangeToken(tsdbReq *datasource.DatasourceRe
 	if err != nil {
 		return nil, err
 	}
+	authType := jsonData.Get("authType").MustString()
 	clientId := jsonData.Get("clientID").MustString()
 
 	secureJsonData := ds.dsInfo.GetDecryptedSecureJsonData()
@@ -168,9 +169,14 @@ func (ds *AirthingsApiDatasource) ExchangeToken(tsdbReq *datasource.DatasourceRe
 	authParams := map[string][]string{
 		"client_id":     {clientId},
 		"client_secret": {clientSecret},
-		"code":          {authCode},
-		"redirect_uri":  {strings.TrimSuffix(redirectUri, "/")},
-		"grant_type":    {"authorization_code"},
+		// "code":          {authCode},
+		// "redirect_uri":  {strings.TrimSuffix(redirectUri, "/")},
+		"grant_type":    {authType},
+	}
+
+	if(authType == "authorization_code"){
+	    authParams["code"] = append(authParams["code"], authCode)
+	    authParams["redirect_uri"] = append(authParams["redirect_uri"], strings.TrimSuffix(redirectUri, "/"))
 	}
 
 	authResp, err := ds.httpClient.PostForm(AirthingsAPITokenUrl, authParams)

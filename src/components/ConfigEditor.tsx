@@ -1,7 +1,7 @@
-import React, { PureComponent, ChangeEvent } from 'react';
-import { FormLabel, Input, Button } from '@grafana/ui';
-import { DataSourcePluginOptionsEditorProps, DataSourceSettings } from '@grafana/data';
-import { AirthingsJsonData, AirthingsSecureJsonData } from '../types';
+import React, {ChangeEvent, PureComponent} from 'react';
+import {Button, FormLabel, Input, Select} from '@grafana/ui';
+import {DataSourcePluginOptionsEditorProps, DataSourceSettings, SelectableValue} from '@grafana/data';
+import {AirthingsJsonData, AirthingsOrganizationId, AirthingsSecureJsonData, AuthType} from '../types';
 
 const AuthCodePattern = /code=([\w]+)/;
 
@@ -39,7 +39,9 @@ export class ConfigEditor extends PureComponent<Props, State> {
     }
 
     if (!options.hasOwnProperty('jsonData')) {
-      options.jsonData = {};
+      options.jsonData = {
+        authType: AuthType.CodeFlow,
+      };
     }
 
     if (!options.hasOwnProperty('secureJsonFields')) {
@@ -117,6 +119,16 @@ export class ConfigEditor extends PureComponent<Props, State> {
     });
   }
 
+  onAuthTypeChange = (option: SelectableValue<AuthType>) => {
+    this.updateDatasource({
+      ...this.state.config,
+      jsonData: {
+        ...this.state.config.jsonData,
+        authType: option.value,
+      },
+    });
+  }
+
   onClientSecretChange = (clientSecret: string) => {
     this.updateDatasource({
       ...this.state.config,
@@ -165,6 +177,16 @@ export class ConfigEditor extends PureComponent<Props, State> {
     return `${authUrl}?client_id=${clientID}&response_type=code&redirect_uri=${currentLocation}&scope=${authScope}`;
   }
 
+  AUTH_OPTIONS: Array<SelectableValue<AuthType>> = [
+    { label: 'Code Grant', value: AuthType.CodeFlow },
+    { label: 'Client Credentials Grant', value: AuthType.ClientCredentials },
+  ];
+
+  getAuthTypeOption = () => {
+    const { config } = this.state;
+    return this.AUTH_OPTIONS.find(v => v.value === config.jsonData.authType);
+  }
+
   render() {
     const { config } = this.state;
     const connectHref = this.getConnectHref();
@@ -173,6 +195,22 @@ export class ConfigEditor extends PureComponent<Props, State> {
       <>
         <h3 className="page-heading">Airthings API Details</h3>
         <div className="gf-form-group">
+          <div className="gf-form-inline">
+            <div className="gf-form">
+              <FormLabel className="width-14">Auth Type</FormLabel>
+              <div className="width-30">
+                <Select
+                    isSearchable={false}
+                    width={15}
+                    options={this.AUTH_OPTIONS}
+                    onChange={this.onAuthTypeChange}
+                    value={this.getAuthTypeOption()}
+                />
+              </div>
+            </div>
+          </div>
+
+
           <div className="gf-form-inline">
             <div className="gf-form">
               <FormLabel className="width-14">Client ID</FormLabel>
@@ -214,11 +252,11 @@ export class ConfigEditor extends PureComponent<Props, State> {
             </div>
           )}
         </div>
-        <div className="gf-form-group">
+        {config.jsonData.authType === AuthType.CodeFlow && <div className="gf-form-group">
           <a type="button" href={connectHref}>
             <img src="public/plugins/grafana-airthings-datasource/img/connect-logo.svg" />
           </a>
-        </div>
+        </div>}
       </>
     );
   }
