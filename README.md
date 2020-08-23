@@ -1,12 +1,13 @@
 # Airthings datasource for Grafana dashboard
 
-Visualize your air with Grafana.
+Visualize your air with Grafana 6.
 
 ![Airthings Datasource](docs/img/dashboard-example.png)
 
 Features:
 
 - Query Airthings sensor data and present as a time series data.
+- Currently supporting Grafana 6.
 
 ### Installation
 
