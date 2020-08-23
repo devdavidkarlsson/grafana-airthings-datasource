@@ -4,7 +4,7 @@
 ##### Install (pre-built release) through your terminal by:
 ```
 brew update
-brew install grafana    # if you don't have it.
+brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/4e48acd1f55270fd00371e226b32184be8dbb23e/Formula/grafana.rb    # grafana 6.7.3 if you don't have it.
 
 cd /usr/local/var/lib/grafana/plugins
 git clone --single-branch --branch release-1.1.1-airthings-1.0.0 https://github.com/Airthings/grafana-airthings-datasource.git
