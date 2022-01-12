@@ -1,5 +1,8 @@
 # Airthings datasource for Grafana dashboard
 
+## 🧟‍♀️ THIS IS NO LONGER MAINTAINED
+It is not working with recent version of Grafana, do develop a new plugin please refer to grafanas own documentation.
+
 Visualize your air with Grafana.
 
 ![Airthings Datasource](docs/img/dashboard-example.png)
