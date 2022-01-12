@@ -1,6 +1,7 @@
 import { DataQuery, SelectableValue, DataSourceJsonData } from '@grafana/data';
 
 export interface AirthingsJsonData extends DataSourceJsonData {
+  authType: AuthType;
   clientID: string;
 }
 
@@ -10,12 +11,19 @@ export interface AirthingsSecureJsonData {
 }
 
 export interface AirthingsQuery extends DataQuery {
+  organizationId: AirthingsOrganizationId;
   queryType: AirthingsQueryType;
+  locationId: AirthingsResourceId;
   resourceId: AirthingsResourceId;
   resourceName: string;
   sensorType: AirthingsSensorType;
   format: QueryFormat;
   resolution: AirthingsQueryResolution;
+}
+
+export enum AuthType {
+  CodeFlow = 'authorization_code',
+  ClientCredentials = 'client_credentials',
 }
 
 export enum QueryFormat {
@@ -48,3 +56,4 @@ export enum AirthingsSensorType {
 }
 
 export type AirthingsResourceId = string | null;
+export type AirthingsOrganizationId = string | null;

@@ -12,24 +12,33 @@ export default class AirthingsApi {
   }
 
   async getLocationLatestSamples(params?: any) {
+    const endpointWithQuery = params.organizationId ?
+        `locations/${params.resourceId}/latest-samples?organizationId=${params.organizationId}`
+        : `locations/${params.resourceId}/latest-samples`;
     return await this.requestWithPagination(`locations/${params.resourceId}/latest-samples`, params);
   }
 
   async getDeviceSamples(params?: any) {
-    return await this.tsdbRequest(`devices/${params.resourceId}/samples?resolution=${params.resolution}`, params);
+    const endpointWithQuery = params.organizationId ?
+        `devices/${params.resourceId}/samples?resolution=${params.resolution}?organizationId=${params.organizationId}`
+        : `devices/${params.resourceId}/samples?resolution=${params.resolution}`;
+
+    return await this.tsdbRequest(endpointWithQuery, params);
     //return await this.requestWithPagination(`devices/${params.resourceId}/samples`, params);
   }
 
   async getOrganizations(params?: any) {
-    return await this.requestWithPagination('organizations', params);
+    return await this.tsdbRequest('organizations', params);
   }
 
   async getDevices(params?: any) {
-    return await this.tsdbRequest('devices', params);
+    const endpointWithQuery = params.organizationId ? `devices?organizationId=${params.organizationId}` : 'devices';
+    return await this.tsdbRequest(endpointWithQuery, params);
   }
 
   async getLocations(params?: any) {
-    return await this.tsdbRequest('locations', params);
+    const endpointWithQuery = params.organizationId ? `locations?organizationId=${params.organizationId}` : 'locations';
+    return await this.tsdbRequest(endpointWithQuery, params);
   }
 
   async requestWithPagination(url: string, params?: any) {

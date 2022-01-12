@@ -11,7 +11,7 @@ import (
 	cache "github.com/patrickmn/go-cache"
 )
 
-const DATA_PATH_VARIABLE = "GF_AIRTHINGS_DS_DATA_PATH"
+var tokenStoragePath = "/var/lib/grafana/airthings"
 
 var pluginLogger = hclog.New(&hclog.LoggerOptions{
 	Name:  "airthings-datasource",
@@ -22,10 +22,15 @@ func main() {
 	pluginLogger.Debug("Running Airthings backend datasource")
 
 	var dataDir string
-	dataDir, exist := os.LookupEnv(DATA_PATH_VARIABLE)
-	if !exist {
+	err := os.Mkdir(tokenStoragePath, os.ModePerm)
+
+	if err == nil || os.IsExist(err) {
+		dataDir = tokenStoragePath
+	} else {
+		// If failed to ensure dir, default to dist folder:
 		dataDir, _ = filepath.Abs(filepath.Dir(os.Args[0]))
 	}
+
 	pluginLogger.Debug("Plugin data dir", "path", dataDir)
 
 	plugin.Serve(&plugin.ServeConfig{

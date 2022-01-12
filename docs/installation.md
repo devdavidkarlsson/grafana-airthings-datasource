@@ -19,7 +19,7 @@ open http://localhost:3000/datasources/new
 ## Setup prerequisites if you don't have them: ##
 
 brew update
-brew install grafana    # if you don't have it.
+brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/4e48acd1f55270fd00371e226b32184be8dbb23e/Formula/grafana.rb    # grafana 6.7.3 if you don't have it.
 brew install go         # if you don't have it.
 
 ## Build the plugin: ##

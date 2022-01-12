@@ -90,6 +90,17 @@ func (p *AirthingsPlugin) Query(ctx context.Context, tsdbReq *datasource.Datasou
 	return
 }
 
+func (ds *AirthingsApiDatasource) getAuthType() (*string, error) {
+	jsonDataStr := ds.dsInfo.GetJsonData()
+	jsonData, err := simplejson.NewJson([]byte(jsonDataStr))
+	if err != nil {
+		return nil, err
+	}
+
+	authType := jsonData.Get("authType").MustString()
+	return &authType, nil
+}
+
 func (ds *AirthingsApiDatasource) AirthingsAuthQuery(ctx context.Context, tsdbReq *datasource.DatasourceRequest) (*datasource.DatasourceResponse, error) {
 	ds.logger.Debug(tsdbReq.Queries[0].ModelJson)
 	authQuery := tsdbReq.Queries[0]
@@ -97,22 +108,57 @@ func (ds *AirthingsApiDatasource) AirthingsAuthQuery(ctx context.Context, tsdbRe
 	if err != nil {
 		return nil, err
 	}
-	redirectUri := queryJSON.Get("target").Get("params").Get("redirectUri").MustString()
-	authCode := queryJSON.Get("target").Get("params").Get("authCode").MustString()
-	_, err = ds.ExchangeToken(tsdbReq, authCode, redirectUri)
-	if err != nil {
-		return nil, err
-	}
 
-	tokenExchangeRespJson, err := json.Marshal(map[string]string{
-		"message": "Authorization code successfully exchanged for refresh token",
-	})
+	authType, err := ds.getAuthType()
+    if err != nil {
+        return nil, err
+    }
+
+    var tokenExchangeRespJsonString string
+	if *authType == "authorization_code" {
+        redirectUri := queryJSON.Get("target").Get("params").Get("redirectUri").MustString()
+        authCode := queryJSON.Get("target").Get("params").Get("authCode").MustString()
+        _, err = ds.ExchangeToken(tsdbReq, authCode, redirectUri)
+        if err != nil {
+            return nil, err
+        }
+        tokenExchangeRespJson, err := json.Marshal(map[string]string{
+            "message": "Authorization code successfully exchanged for token",
+        })
+        if err != nil {
+            return nil, err
+        }
+        tokenExchangeRespJsonString = string(tokenExchangeRespJson)
+
+	} else if *authType == "client_credentials" {
+        _, err = ds.ClientCredentialsExchange()
+        if err != nil {
+            return nil, err
+        }
+        tokenExchangeRespJson, err := json.Marshal(map[string]string{
+            "message": "Client Credentials successfully exchanged for token",
+        })
+        if err != nil {
+            return nil, err
+        }
+        tokenExchangeRespJsonString = string(tokenExchangeRespJson)
+
+	} else {
+        tokenExchangeRespJson, err := json.Marshal(map[string]string{
+            "message": "Unsupported grant type for token exchange.",
+        })
+        if err != nil {
+            return nil, err
+        }
+        tokenExchangeRespJsonString = string(tokenExchangeRespJson)
+
+	}
 
 	response := &datasource.DatasourceResponse{
 		Results: []*datasource.QueryResult{
 			&datasource.QueryResult{
 				RefId:    AirthingsAuthQueryType,
-				MetaJson: string(tokenExchangeRespJson),
+				MetaJson: tokenExchangeRespJsonString,
 			},
 		},
 	}
@@ -128,28 +174,90 @@ func (ds *AirthingsApiDatasource) GetAccessToken() (string, error) {
 		ds.logger.Debug("Access token expired, obtaining new one")
 	}
 
-	var refreshToken string
-	var err error
-	refreshTokenCached, found := ds.cache.Get("refreshToken")
-	if !found {
-		ds.logger.Debug("Loading refresh token from file")
-		refreshToken, err = ds.cache.Load("refreshToken")
-		if err != nil {
-			ds.logger.Error(err.Error())
-			return "", errors.New("Refresh token not found, authorize datasource first: "+ err.Error())
-		}
-		ds.logger.Debug("Refresh token loaded from file", "refresh token", refreshToken)
-	} else {
-		refreshToken = refreshTokenCached.(string)
-	}
+	authType, err := ds.getAuthType()
+    if err != nil {
+        return "", err
+    }
+    if *authType == "authorization_code" {
+        var refreshToken string
+        var err error
+        refreshTokenCached, found := ds.cache.Get("refreshToken")
+        if !found {
+            ds.logger.Debug("Loading refresh token from file")
+            refreshToken, err = ds.cache.Load("refreshToken")
+            if err != nil {
+                ds.logger.Error(err.Error())
+                return "", errors.New("Refresh token not found, authorize datasource first: "+ err.Error())
+            }
+            ds.logger.Debug("Refresh token loaded from file", "refresh token", refreshToken)
+        } else {
+            refreshToken = refreshTokenCached.(string)
+        }
 
-	tokenResp, err := ds.RefreshAccessToken(refreshToken)
+        tokenResp, err := ds.RefreshAccessToken(refreshToken)
+        if err != nil {
+            ds.logger.Error(err.Error())
+            return "", err
+        }
+        return tokenResp.AccessToken, nil
+
+    } else if *authType == "client_credentials" {
+        tokenResp, err := ds.ClientCredentialsExchange()
+        if err != nil {
+            ds.logger.Error(err.Error())
+            return "", err
+        }
+        return tokenResp.AccessToken, nil
+    } else {
+        return "", errors.New("Unsupported grant type for token exchange: "+ err.Error())
+    }
+
+
+}
+
+func (ds *AirthingsApiDatasource) ClientCredentialsExchange() (*TokenExchangeResponse, error) {
+	jsonDataStr := ds.dsInfo.GetJsonData()
+	jsonData, err := simplejson.NewJson([]byte(jsonDataStr))
 	if err != nil {
-		ds.logger.Error(err.Error())
-		return "", err
+		return nil, err
+	}
+	clientId := jsonData.Get("clientID").MustString()
+
+	secureJsonData := ds.dsInfo.GetDecryptedSecureJsonData()
+	clientSecret := secureJsonData["clientSecret"]
+
+	authParams := map[string][]string{
+		"client_id":     {clientId},
+		"client_secret": {clientSecret},
+		"grant_type":    {"client_credentials"},
 	}
 
-	return tokenResp.AccessToken, nil
+	authResp, err := ds.httpClient.PostForm(AirthingsAPITokenUrl, authParams)
+	if authResp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Auth error in clientCredentials exchange, status: %v", authResp.Status)
+	}
+
+	defer authResp.Body.Close()
+	body, err := ioutil.ReadAll(authResp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	respJson, err := simplejson.NewJson(body)
+	if err != nil {
+		return nil, err
+	}
+
+	accessToken := respJson.Get("access_token").MustString()
+	accessTokenExpIn := time.Duration(respJson.Get("expires_in").MustInt64()) * time.Second
+	accessTokenExpAt := time.Now().Add(accessTokenExpIn).Unix()
+
+	ds.cache.Set("accessToken", accessToken, accessTokenExpIn)
+
+	return &TokenExchangeResponse{
+		AccessToken:      accessToken,
+		AccessTokenExpAt: accessTokenExpAt,
+	}, nil
 }
 
 // ExchangeToken invokes first time when authentication required and exchange authorization code for the
@@ -175,7 +283,7 @@ func (ds *AirthingsApiDatasource) ExchangeToken(tsdbReq *datasource.DatasourceRe
 
 	authResp, err := ds.httpClient.PostForm(AirthingsAPITokenUrl, authParams)
 	if authResp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Auth error, status: %v, %v", authResp.Status)
+		return nil, fmt.Errorf("Auth error in code exchange, status: %v", authResp.Status)
 	}
 
 	defer authResp.Body.Close()
@@ -213,6 +321,7 @@ func (ds *AirthingsApiDatasource) RefreshAccessToken(refreshToken string) (*Toke
 	if err != nil {
 		return nil, err
 	}
+
 	clientId := jsonData.Get("clientID").MustString()
 
 	secureJsonData := ds.dsInfo.GetDecryptedSecureJsonData()
@@ -221,13 +330,13 @@ func (ds *AirthingsApiDatasource) RefreshAccessToken(refreshToken string) (*Toke
 	authParams := map[string][]string{
 		"client_id":     {clientId},
 		"client_secret": {clientSecret},
-		"refresh_token": {refreshToken},
-		"grant_type":    {"refresh_token"},
+		"refreshToken": {refreshToken},
+		"grant_type": {"refresh_token"},
 	}
 
 	authResp, err := ds.httpClient.PostForm(AirthingsAPITokenUrl, authParams)
 	if authResp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Auth error, status: %v", authResp.Status)
+		return nil, fmt.Errorf("Auth error in refresh exchange, status: %v", authResp.Status)
 	}
 
 	defer authResp.Body.Close()
